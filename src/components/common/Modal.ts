@@ -1,6 +1,6 @@
 import { Component } from '../base/Component';
 import { ensureElement } from '../../utils/utils';
-import { ModalActions, ModalProps } from '../../types/types';
+import { ModalActions, ModalProps } from '../../types';
 
 export class Modal extends Component<ModalProps> {
 	protected _closeButton: HTMLButtonElement;

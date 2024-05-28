@@ -1,6 +1,6 @@
-import { BasketActions, BasketProps } from '../../../types/types';
-import { ensureElement } from '../../../utils/utils';
-import { Component } from '../../base/Component';
+import { BasketActions, BasketProps } from '../../types';
+import { ensureElement } from '../../utils/utils';
+import { Component } from '../base/Component';
 
 export class Basket extends Component<BasketProps> {
 	protected _basketListElement: HTMLUListElement;
@@ -13,13 +13,13 @@ export class Basket extends Component<BasketProps> {
 	) {
 		super(_container);
 
-		this._basketListElement = ensureElement<HTMLUListElement>(
-			'.basket__list',
+		this._basketButtonElement = ensureElement<HTMLButtonElement>(
+			'.basket__button',
 			this._container
 		);
 
-		this._basketButtonElement = ensureElement<HTMLButtonElement>(
-			'.basket__button',
+		this._basketListElement = ensureElement<HTMLUListElement>(
+			'.basket__list',
 			this._container
 		);
 
@@ -38,12 +38,16 @@ export class Basket extends Component<BasketProps> {
 		this._basketListElement.innerHTML = null;
 	}
 
+	set totalPrice(value: string | number) {
+		this.setText(this._totalPriceElement, `${value} синапсов`);
+	}
+
 	set disableBuyButton(value: boolean) {
 		this.setDisabled(this._basketButtonElement, value);
 	}
 
-	set totalPrice(value: string | number) {
-		this.setText(this._totalPriceElement, value);
+	set items(value: HTMLElement[]) {
+		this._basketListElement.replaceChildren(...value);
 	}
 }
 export { BasketProps };

@@ -24,20 +24,21 @@ export interface IEvents {
 export type BasketProps = {
 	totalPrice: string | number;
 	disableBuyButton: boolean;
-};
-
-export type BasketActions = {
-	onBuy: () => void;
-};
-
-export type BasketItemActions = {
-	onDelete: () => void;
+	items: HTMLElement[];
 };
 
 export type BasketItemProps = {
 	title: string;
 	price: string | number | null;
 	index: number | string;
+};
+
+export type BasketItemActions = {
+	onDelete: () => void;
+};
+
+export type BasketActions = {
+	onBuy: () => void;
 };
 
 export const CardCategory = {
@@ -86,11 +87,6 @@ export type SuccessProps = {
 	total: number;
 };
 
-export type CatalogItemsDto = {
-	total: number;
-	items: CatalogItemDto[];
-};
-
 export type CatalogItemDto = {
 	id: string;
 	description: string;
@@ -99,6 +95,14 @@ export type CatalogItemDto = {
 	category: 'софт-скил' | 'хард-скил' | 'другое' | 'дополнительное' | 'кнопка';
 	price: number;
 };
+
+export type CatalogItemsDto = {
+	total: number;
+	items: CatalogItemDto[];
+};
+
+
+
 
 export type Order = {
 	payment: string;
@@ -117,6 +121,7 @@ export type OrderDto = {
 export type CatalogItemPreviewViewProps = {
 	id: string;
 	description: string;
+	disableBuyButton: boolean;
 } & CardProps;
 
 export type CatalogItemViewProps = {
@@ -128,11 +133,12 @@ export type ContactsForm = {
 	phone: string;
 };
 
+export type BasketItemViewProps = {
+	id: string;
+} & BasketItemProps;
+
+
 export type OrderForm = {
 	paymentType: string;
 	address: string;
 };
-
-export type BasketItemViewProps = {
-	id: string;
-} & BasketItemProps;

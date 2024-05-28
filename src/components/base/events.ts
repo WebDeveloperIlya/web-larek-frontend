@@ -3,13 +3,8 @@ import {
 	EventName,
 	IEvents,
 	Subscriber,
-} from '../../types/types';
+} from '../../types';
 
-/**
- * Брокер событий, классическая реализация
- * В расширенных вариантах есть возможность подписаться на все события
- * или слушать события по шаблону например
- */
 export class EventEmitter implements IEvents {
 	_events: Map<EventName, Set<Subscriber>>;
 

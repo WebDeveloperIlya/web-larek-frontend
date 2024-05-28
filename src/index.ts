@@ -1,16 +1,19 @@
-import { EventEmitter } from './components/base/Events';
-import { CatalogApi } from './components/model/CatalogApi';
-import { OrderApi } from './components/model/OrderApi';
-import { BasketView } from './components/view/Basket/BasketView';
-import { CatalogItemPreviewView } from './components/view/CatalogItemPreviewView';
-import { CatalogItemView } from './components/view/CatalogItemView';
-import { ContactsView } from './components/view/ContactsView';
-import { ModalView } from './components/view/ModalView';
-import { OrderView } from './components/view/OrderView';
-import { SuccessView } from './components/view/SuccessView';
+import { ensureElement } from './utils/utils';
 import './scss/styles.scss';
-import { CatalogItemDto, ContactsForm, OrderForm } from './types/types';
-import { ensureElement, validateForm } from './utils/utils';
+import { EventEmitter } from './components/base/Events';
+import { CatalogApi } from './components/modelApi/CatalogApi';
+import { AppState } from './components/AppState';
+import { CatalogItemView } from './components/view/CatalogItemView';
+import { ModalView } from './components/view/ModalView';
+import { CatalogItemPreviewView } from './components/view/CatalogItemPreviewView';
+import { BasketView } from './components/view/BasketView';
+import { BasketItemView } from './components/view/BasketItemView';
+import { OrderView } from './components/view/OrderView';
+import { ContactsForm, OrderForm } from './types';
+import { ContactsView } from './components/view/ContactsView';
+import { SuccessView } from './components/view/SuccessView';
+
+import {Page} from "./components/Page";
 
 const itemsCatalog = ensureElement<HTMLElement>('.gallery');
 const basketButton = ensureElement<HTMLButtonElement>('.header__basket');
@@ -18,125 +21,124 @@ const basketCounter = ensureElement<HTMLSpanElement>(
 	'.header__basket-counter',
 	basketButton
 );
-const page = ensureElement<HTMLBodyElement>('.page__wrapper');
-
-const catalogApi = new CatalogApi();
-const orderApi = new OrderApi();
 
 const events = new EventEmitter();
-const basket = new BasketView(events);
+const appState = new AppState(events);
+
+const catalogApi = new CatalogApi();
+
 const modal = new ModalView(events);
+const basket = new BasketView(events);
 const order = new OrderView(events);
 const contacts = new ContactsView(events);
 
-const orderForm: OrderForm = { address: '', paymentType: 'online' };
-const orderValidationRules = {
-	address: (value: string) =>
-		!value.length ? 'Заполните адрес доставки' : null,
-	paymentType: (value: string) =>
-		!value.length ? 'Выберите тип оплаты' : null,
-};
-const contactsForm: ContactsForm = { email: '', phone: '' };
-const contactsValidationRules = {
-	email: (value: string) => (!value.length ? 'Введите email' : null),
-	phone: (value: string) => (!value.length ? 'Введите телефон' : null),
-};
+const page = new Page(document.body, events);
 
-let catalogItems: CatalogItemDto[] = [];
+events.on('modal:open', () => {
+	page.locked(true);
+});
 
-const calculateBasketTotal = () =>
-	basket.items.reduce((acc, item) => acc + +item.price, 0);
+events.on('modal:close', () => {
+	page.locked(false);
+});
 
-const updateBasketCounter = (value: number = basket.itemsAmount) =>
-	(basketCounter.textContent = `${value}`);
-
-const getCatalogItemById = (id: string) =>
-	catalogItems.find((item) => item.id === id);
-
-catalogApi.getCatalogItems().then((data) => {
-	catalogItems = data.items;
-	data.items.forEach((item) =>
+events.on('catalogItems:set', () => {
+	appState.catalogItems.forEach((item) =>
 		itemsCatalog.appendChild(new CatalogItemView(events).render(item))
 	);
 });
 
-events.on<{ id: string }>('catalogItem:click', ({ id }) =>
+events.on('basketItems:change', () => {
+	basketCounter.textContent = `${appState.basketItems.length}`;
+
+	basket.render({
+		disableBuyButton: !appState.basketTotal,
+		totalPrice: appState.basketTotal,
+		items: appState.basketItems.map((item, index) =>
+			new BasketItemView(events).render({
+				...item,
+				index: index + 1,
+			})
+		),
+	});
+});
+
+events.on<{ id: string }>('catalogItem:click', ({ id }) => {
+	const item = appState.getCatalogItemById(id);
+
 	modal.render({
-		content: new CatalogItemPreviewView(events).render(getCatalogItemById(id)),
-	})
-);
+		content: new CatalogItemPreviewView(events).render({
+			...item,
+			disableBuyButton:
+				item.price === null || appState.basketItems.includes(item),
+		}),
+	});
+});
 
 events.on<{ id: string }>('catalogItem:addToCartClick', ({ id }) => {
-	if (basket.items.some((item) => item.id === id)) return;
-	basket.addItem({ ...getCatalogItemById(id), index: basket.itemsAmount });
-	updateBasketCounter();
+	appState.addBasketItem(appState.getCatalogItemById(id));
 	modal.close();
 });
 
-events.on<{ id: string }>('basketItem:delete', ({ id }) => {
-	basket.removeItemById(id);
-	updateBasketCounter();
-	basket.render({
-		totalPrice: calculateBasketTotal(),
-		disableBuyButton: !basket.items.length,
-	});
-});
+events.on<{ id: string }>('basketItem:delete', ({ id }) =>
+	appState.removeBasketItem(id)
+);
 
-events.on('basket:buy', () => {
+events.on('basket:buy', () =>
 	modal.render({
-		content: order.render({ errors: [], valid: false }),
-	});
-});
+		content: order.render(appState.validateOrderForm()),
+	})
+);
 
 events.on<Partial<OrderForm>>('order:change', (data) => {
-	validateForm(orderForm, data, orderValidationRules, order);
+	appState.orderForm = { ...appState.orderForm, ...data };
+	order.render(appState.validateOrderForm());
 });
 
 events.on<Partial<ContactsForm>>('contacts:change', (data) => {
-	validateForm(contactsForm, data, contactsValidationRules, contacts);
+	appState.contactsForm = { ...appState.contactsForm, ...data };
+	contacts.render(appState.validateContactsForm());
 });
 
-events.on('order:submit', () => {
-	modal.render({ content: contacts.render() });
-});
+events.on('order:submit', () =>
+	modal.render({ content: contacts.render(appState.validateContactsForm()) })
+);
 
 events.on('contacts:submit', () => {
-	orderApi
+	catalogApi
 		.postOrder({
-			payment: orderForm.paymentType,
-			email: contactsForm.email,
-			phone: contactsForm.phone,
-			address: orderForm.address,
-			total: calculateBasketTotal(),
-			items: basket.items.map((item) => item.id),
+			payment: appState.orderForm.paymentType,
+			email: appState.contactsForm.email,
+			phone: appState.contactsForm.phone,
+			address: appState.orderForm.address,
+			total: appState.basketTotal,
+			items: appState.basketItems.map((item) => item.id),
 		})
-		.then((data) => {
+		.then(() => {
 			modal.render({
 				content: new SuccessView(events).render({
-					total: calculateBasketTotal(),
+					total: appState.basketTotal,
 				}),
 			});
-			basket.clear();
-			updateBasketCounter(0);
-		});
+			appState.clearBasket();
+			appState.resetForms();
+			order.reset();
+			contacts.reset();
+		})
+		.catch(console.error);
 });
 
 events.on('success:click', () => {
 	modal.close();
 });
 
-events.on('modal:open', () => {
-	page.classList.add('page__wrapper_locked');
-});
-events.on('modal:close', () => {
-	page.classList.remove('page__wrapper_locked');
-});
-
 basketButton.addEventListener('click', () => {
 	modal.render({
-		content: basket.render({
-			totalPrice: calculateBasketTotal(),
-			disableBuyButton: !basket.items.length,
-		}),
+		content: basket.render(),
 	});
 });
+
+catalogApi
+	.getCatalogItems()
+	.then((data) => (appState.catalogItems = data.items))
+	.catch(console.error);

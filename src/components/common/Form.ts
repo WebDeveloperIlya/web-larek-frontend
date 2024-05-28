@@ -1,4 +1,4 @@
-import { FormActions, FormProps } from '../../types/types';
+import { FormActions, FormProps } from '../../types';
 import { ensureElement } from '../../utils/utils';
 import { Component } from '../base/Component';
 
@@ -23,7 +23,7 @@ export class Form<T> extends Component<FormProps> {
 		);
 
 		if (actions?.onInput) {
-			this._container.addEventListener('input', this.inputHandler);
+			this._container.addEventListener('input', this.onInputChange);
 		}
 
 		if (actions?.onSubmit) {
@@ -31,7 +31,7 @@ export class Form<T> extends Component<FormProps> {
 		}
 	}
 
-	private inputHandler = (e: KeyboardEvent) => {
+	private onInputChange = (e: KeyboardEvent) => {
 		const target = e.target as HTMLInputElement;
 		this.actions.onInput(
 			target.name as keyof T,
@@ -44,6 +44,10 @@ export class Form<T> extends Component<FormProps> {
 		e.preventDefault();
 		this.actions.onSubmit();
 	};
+
+	public reset() {
+		this._container.reset();
+	}
 
 	set valid(value: boolean) {
 		this.setDisabled(this.__submitButtonElement, !value);

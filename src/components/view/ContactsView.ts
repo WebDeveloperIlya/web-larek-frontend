@@ -1,4 +1,4 @@
-import { ContactsForm, IEvents } from '../../types/types';
+import { ContactsForm, IEvents } from '../../types';
 import { cloneTemplate } from '../../utils/utils';
 import { Form } from '../common/Form';
 

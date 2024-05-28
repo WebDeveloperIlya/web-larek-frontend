@@ -1,4 +1,4 @@
-import { CardActions, CardCategory, CardProps } from '../../types/types';
+import { CardActions, CardCategory, CardProps } from '../../types';
 import { ensureElement } from '../../utils/utils';
 import { Component } from '../base/Component';
 
@@ -7,16 +7,16 @@ export class Card<T> extends Component<CardProps & T> {
 	private __titleElement: HTMLHeadingElement;
 	private __imageElement: HTMLImageElement;
 	private __priceElement: HTMLSpanElement;
-	private __buttonElement: HTMLButtonElement | null;
+	protected _buttonElement: HTMLButtonElement | null;
 
 	constructor(container: HTMLElement, actions?: CardActions) {
 		super(container);
-		this.__chipElement = ensureElement<HTMLSpanElement>(
-			'.card__category',
-			this._container
-		);
 		this.__titleElement = ensureElement<HTMLHeadingElement>(
 			'.card__title',
+			this._container
+		);
+		this.__chipElement = ensureElement<HTMLSpanElement>(
+			'.card__category',
 			this._container
 		);
 		this.__imageElement = ensureElement<HTMLImageElement>(
@@ -28,12 +28,12 @@ export class Card<T> extends Component<CardProps & T> {
 			this._container
 		);
 
-		this.__buttonElement =
+		this._buttonElement =
 			this._container.querySelector<HTMLButtonElement>('.card__button');
 
 		if (actions) {
-			if (this.__buttonElement) {
-				this.__buttonElement.addEventListener('click', actions.onClick);
+			if (this._buttonElement) {
+				this._buttonElement.addEventListener('click', actions.onClick);
 			} else this._container.addEventListener('click', actions.onClick);
 		}
 	}
@@ -43,7 +43,7 @@ export class Card<T> extends Component<CardProps & T> {
 	}
 
 	set price(value: string) {
-		if (value) this.setText(this.__priceElement, value);
+		if (value) this.setText(this.__priceElement, `${value} синапсов`);
 		else this.setText(this.__priceElement, 'Бесценно');
 	}
 

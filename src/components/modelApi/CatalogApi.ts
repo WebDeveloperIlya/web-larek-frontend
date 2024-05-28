@@ -1,10 +1,14 @@
-import { CatalogItemDto, CatalogItemsDto } from '../../types/types';
+import { CatalogItemDto, CatalogItemsDto, Order, OrderDto } from '../../types';
 import { API_URL, CDN_URL } from '../../utils/constants';
 import { Api } from '../base/Api';
 
 export class CatalogApi extends Api {
 	constructor() {
 		super(API_URL);
+	}
+
+	postOrder(order: Order) {
+		return this.post('/order', order) as Promise<OrderDto>;
 	}
 
 	async getCatalogItems() {

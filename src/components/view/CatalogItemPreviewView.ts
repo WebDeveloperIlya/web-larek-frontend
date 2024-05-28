@@ -1,4 +1,4 @@
-import { CatalogItemPreviewViewProps, IEvents } from '../../types/types';
+import { CatalogItemPreviewViewProps, IEvents } from '../../types';
 import { cloneTemplate, ensureElement } from '../../utils/utils';
 import { Card } from '../common/Card';
 
@@ -18,6 +18,10 @@ export class CatalogItemPreviewView extends Card<CatalogItemPreviewViewProps> {
 
 	set id(id: string) {
 		this._container.dataset.id = id || '';
+	}
+
+	set disableBuyButton(value: boolean) {
+		this.setDisabled(this._buttonElement, value);
 	}
 
 	get id() {

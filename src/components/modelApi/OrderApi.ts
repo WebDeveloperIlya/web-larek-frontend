@@ -1,4 +1,4 @@
-import { Order, OrderDto } from '../../types/types';
+import { Order, OrderDto } from '../../types';
 import { API_URL } from '../../utils/constants';
 import { Api } from '../base/Api';
 

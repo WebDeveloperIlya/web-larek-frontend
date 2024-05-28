@@ -1,7 +1,7 @@
-import { ApiPostMethods } from '../../types/types';
+import { ApiPostMethods } from '../../types/index';
 
 export class Api {
-	readonly baseUrl: string;
+	protected baseUrl: string;
 	protected options: RequestInit;
 
 	constructor(baseUrl: string, options: RequestInit = {}) {
@@ -22,18 +22,18 @@ export class Api {
 				.then((data) => Promise.reject(data.error ?? response.statusText));
 	}
 
-	get(uri: string) {
-		return fetch(this.baseUrl + uri, {
-			...this.options,
-			method: 'GET',
-		}).then(this.handleResponse);
-	}
-
 	post(uri: string, data: object, method: ApiPostMethods = 'POST') {
 		return fetch(this.baseUrl + uri, {
 			...this.options,
 			method,
 			body: JSON.stringify(data),
+		}).then(this.handleResponse);
+	}
+
+	get(uri: string) {
+		return fetch(this.baseUrl + uri, {
+			...this.options,
+			method: 'GET',
 		}).then(this.handleResponse);
 	}
 }

@@ -1,4 +1,4 @@
-import { IEvents } from '../../types/types';
+import { IEvents } from '../../types';
 import { cloneTemplate } from '../../utils/utils';
 import { Success } from '../common/Success';
 

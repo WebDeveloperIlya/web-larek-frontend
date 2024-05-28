@@ -1,4 +1,4 @@
-import { IEvents, OrderForm } from '../../types/types';
+import { IEvents, OrderForm } from '../../types';
 import { cloneTemplate, ensureElement } from '../../utils/utils';
 import { Form } from '../common/Form';
 
@@ -19,17 +19,17 @@ export class OrderView extends Form<OrderForm> {
 			this._container
 		);
 
-		onlineButton.classList.toggle('button_alt-active');
+		this.toggleClass(onlineButton, 'button_alt-active');
 
 		onlineButton.addEventListener('click', () => {
-			cashButton.classList.remove('button_alt-active');
-			onlineButton.classList.add('button_alt-active');
+			this.toggleClass(cashButton, 'button_alt-active', false);
+			this.toggleClass(onlineButton, 'button_alt-active', true);
 			events.emit('order:change', { paymentType: 'online' });
 		});
 
 		cashButton.addEventListener('click', () => {
-			onlineButton.classList.remove('button_alt-active');
-			cashButton.classList.add('button_alt-active');
+			this.toggleClass(onlineButton, 'button_alt-active', false);
+			this.toggleClass(cashButton, 'button_alt-active', true);
 			events.emit('order:change', { paymentType: 'cash' });
 		});
 	}

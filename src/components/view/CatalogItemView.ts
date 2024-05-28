@@ -1,4 +1,4 @@
-import { CatalogItemViewProps, IEvents } from '../../types/types';
+import { CatalogItemViewProps, IEvents } from '../../types';
 import { cloneTemplate } from '../../utils/utils';
 import { Card } from '../common/Card';
 

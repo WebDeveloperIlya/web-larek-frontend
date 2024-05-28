@@ -1,4 +1,4 @@
-import { SuccessActions, SuccessProps } from '../../types/types';
+import { SuccessActions, SuccessProps } from '../../types';
 import { ensureElement, formatNumber } from '../../utils/utils';
 import { Component } from '../base/Component';
 
